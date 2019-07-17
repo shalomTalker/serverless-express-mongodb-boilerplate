@@ -1,0 +1,52 @@
+
+service: sls-express-mongodb
+
+custom:
+  secrets: ${file(secrets.json)}
+
+package:
+  include:
+    - ./**
+    
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: ${self:custom.secrets.NODE_ENV}
+  region: eu-central-1
+  environment: 
+    NODE_ENV: ${self:custom.secrets.NODE_ENV}
+    DB: ${self:custom.secrets.DB}
+
+functions:
+  app:
+    handler: server.run
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: 
+            origin: '*' 
+            headers: 
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: 
+            origin: '*' 
+            headers: 
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+
+plugins:
+  - serverless-offline
